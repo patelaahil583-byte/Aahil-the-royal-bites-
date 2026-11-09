@@ -1,0 +1,1114 @@
+ { useState, useEffect, useMemo } from 'react';
+import { 
+  ShoppingBag, Menu as MenuIcon, X, Search, ChevronRight, Star, 
+  Clock, MapPin, Phone, MessageSquare, Plus, Minus, Trash2, 
+  Heart, ShieldCheck, Sparkles, Utensils, CheckCircle, Info, 
+  ArrowRight, ExternalLink, Send, Eye, Award, Flame, Filter,
+  Settings, Edit3, Save, RotateCcw
+} from 'lucide-react';
+
+// --- INITIAL DEFAULT CONFIGURATION ---
+const DEFAULT_CONFIG = {
+  whatsappNumber: "916205844811", // Configured to 6205844811 (India 91 prefix)
+  restaurantName: "THE ROYAL BITES",
+  deliveryFee: 30,
+  freeDeliveryThreshold: 499,
+  taxRate: 5 // 5% GST/Tax
+};
+
+// --- INITIAL AFFORDABLE MENU DATA ---
+const INITIAL_MENU_ITEMS = [
+  {
+    id: 'rb-1',
+    name: 'Saffron Royal Biryani',
+    category: 'Indian',
+    price: 249,
+    isVeg: false,
+    isBestseller: true,
+    rating: 4.9,
+    reviewsCount: 128,
+    image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&q=80&w=800',
+    description: 'Slow-cooked fragrant Basmati rice layered with tender marinated chicken, authentic spices & saffron.'
+  },
+  {
+    id: 'rb-2',
+    name: 'Truffle Shahi Paneer',
+    category: 'Indian',
+    price: 199,
+    isVeg: true,
+    isBestseller: true,
+    rating: 4.8,
+    reviewsCount: 95,
+    image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&q=80&w=800',
+    description: 'Fresh cottage cheese cubes cooked in rich cashew and tomato gravy with subtle cardamom aroma.'
+  },
+  {
+    id: 'rb-3',
+    name: 'Smoked Mutton Seekh Kebab',
+    category: 'Starters',
+    price: 169,
+    isVeg: false,
+    isBestseller: false,
+    rating: 4.9,
+    reviewsCount: 84,
+    image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&q=80&w=800',
+    description: 'Melt-in-mouth smoked lamb patties prepared with authentic Indian spices, served with mint chutney.'
+  },
+  {
+    id: 'rb-4',
+    name: 'Crispy Peri Peri Fries',
+    category: 'Starters',
+    price: 99,
+    isVeg: true,
+    isBestseller: false,
+    rating: 4.6,
+    reviewsCount: 62,
+    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&q=80&w=800',
+    description: 'Hand-cut golden potato fries tossed in spicy peri-peri seasoning, served with garlic mayo.'
+  },
+  {
+    id: 'rb-5',
+    name: 'Royal Loaded Cheese Pizza',
+    category: 'Pizza',
+    price: 189,
+    isVeg: true,
+    isBestseller: true,
+    rating: 4.9,
+    reviewsCount: 142,
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=800',
+    description: 'Hand-tossed crust loaded with 100% real mozzarella cheese, wild herbs, and fresh veggies.'
+  },
+  {
+    id: 'rb-6',
+    name: 'Double Cheese Crispy Burger',
+    category: 'Burgers',
+    price: 139,
+    isVeg: false,
+    isBestseller: false,
+    rating: 4.7,
+    reviewsCount: 78,
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800',
+    description: 'Crispy seasoned patty with liquid cheddar cheese, crunchy lettuce, and house secret sauce.'
+  },
+  {
+    id: 'rb-7',
+    name: 'Chili Garlic Steam Dumplings',
+    category: 'Chinese',
+    price: 119,
+    isVeg: true,
+    isBestseller: false,
+    rating: 4.5,
+    reviewsCount: 54,
+    image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&q=80&w=800',
+    description: 'Handmade thin momos stuffed with spiced veggies, served with hot red chili dip.'
+  },
+  {
+    id: 'rb-8',
+    name: 'Hakkar Noodles with Manchurian',
+    category: 'Chinese',
+    price: 159,
+    isVeg: true,
+    isBestseller: true,
+    rating: 4.8,
+    reviewsCount: 88,
+    image: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&q=80&w=800',
+    description: 'Wok-tossed stir-fry veg noodles paired with spicy tossed vegetable balls in Manchurian sauce.'
+  },
+  {
+    id: 'rb-9',
+    name: 'Kashmiri Saffron Phirni',
+    category: 'Desserts',
+    price: 89,
+    isVeg: true,
+    isBestseller: true,
+    rating: 5.0,
+    reviewsCount: 160,
+    image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&q=80&w=800',
+    description: 'Traditional slow-cooked sweet rice dessert flavored with saffron and pistachios in clay pots.'
+  },
+  {
+    id: 'rb-10',
+    name: 'Choco Lava Cake with Ice Cream',
+    category: 'Desserts',
+    price: 109,
+    isVeg: true,
+    isBestseller: false,
+    rating: 4.9,
+    reviewsCount: 110,
+    image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&q=80&w=800',
+    description: 'Warm dark chocolate cake with gooey molten center served alongside vanilla ice cream.'
+  },
+  {
+    id: 'rb-11',
+    name: 'Royal Mango Blossom Mojito',
+    category: 'Beverages',
+    price: 69,
+    isVeg: true,
+    isBestseller: false,
+    rating: 4.7,
+    reviewsCount: 43,
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800',
+    description: 'Refreshing blend of Alphonso mango nectar, fresh mint leaves, lemon juice, and chilled soda.'
+  },
+  {
+    id: 'rb-12',
+    name: 'Kashmiri Kahwa Tea',
+    category: 'Beverages',
+    price: 49,
+    isVeg: true,
+    isBestseller: false,
+    rating: 4.8,
+    reviewsCount: 51,
+    image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&q=80&w=800',
+    description: 'Green tea brewed with saffron strands, crushed almonds, cardamom, and natural honey.'
+  }
+];
+
+const SPECIAL_OFFERS = [
+  {
+    id: 'off-1',
+    title: 'Royal Biryani Combo',
+    tag: 'SUPER SAVER',
+    discount: 'SAVE ₹100',
+    originalPrice: 407,
+    offerPrice: 299,
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800',
+    description: 'Saffron Royal Biryani + Kashmiri Phirni + Cold Beverage',
+    itemsToAdd: ['rb-1', 'rb-9', 'rb-11']
+  },
+  {
+    id: 'off-2',
+    title: 'Pizza & Fries Party Box',
+    tag: 'WEEKEND SPECIAL',
+    discount: 'SAVE ₹60',
+    originalPrice: 288,
+    offerPrice: 228,
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=800',
+    description: '1 Loaded Cheese Pizza + 1 Peri Peri Fries + 1 Chilled Beverage',
+    itemsToAdd: ['rb-5', 'rb-4', 'rb-11']
+  },
+  {
+    id: 'off-3',
+    title: 'Chinese Snack Combo',
+    tag: 'STARTER PACK',
+    discount: 'SAVE ₹50',
+    originalPrice: 278,
+    offerPrice: 228,
+    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&q=80&w=800',
+    description: '1 Garlic Dumplings + 1 Veg Manchurian Noodles Combo',
+    itemsToAdd: ['rb-7', 'rb-8']
+  }
+];
+
+const GALLERY_IMAGES = [
+  { id: 1, title: 'Luxurious Interior Dining Hall', category: 'Ambiance', image: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&q=80&w=800' },
+  { id: 2, title: 'Royal Chef Plating Dish', category: 'Kitchen', image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&q=80&w=800' },
+  { id: 3, title: 'Smoked Mutton Seekh Kebabs', category: 'Food', image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&q=80&w=800' },
+  { id: 4, title: 'Private VIP Dining Lounge', category: 'Ambiance', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=800' },
+  { id: 5, title: 'Handcrafted Mocktail Mixology', category: 'Bar', image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=800' },
+  { id: 6, title: 'Signature Artisan Dessert Presentation', category: 'Food', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&q=80&w=800' }
+];
+
+const TESTIMONIALS = [
+  {
+    id: 1,
+    name: 'Rajesh Malhotra',
+    role: 'Food Critic',
+    rating: 5,
+    comment: 'The Saffron Biryani is superb! Taste, packing and delivery are on point. Very reasonable prices for top tier taste.',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+  },
+  {
+    id: 2,
+    name: 'Priya Sharma',
+    role: 'Regular Customer',
+    rating: 5,
+    comment: 'Ordering directly via WhatsApp is super easy! The food arrived piping hot within 30 minutes.',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200'
+  },
+  {
+    id: 3,
+    name: 'Vikram Mehta',
+    role: 'Family Diner',
+    rating: 5,
+    comment: 'Best paneer and momos in town! The portion sizes are generous and charges are minimal.',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
+  }
+];
+
+const MENU_CATEGORIES = [
+  "All Items", "Starters", "Main Course", "Indian", "Chinese", "Pizza", "Burgers", "Desserts", "Beverages"
+];
+
+// --- MAIN APPLICATION COMPONENT ---
+export default function App() {
+  // Store Config (Owner changeable)
+  const [config, setConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem('royal_bites_config');
+      return saved ? JSON.parse(saved) : DEFAULT_CONFIG;
+    } catch {
+      return DEFAULT_CONFIG;
+    }
+  });
+
+  // Food Menu Items (Owner editable prices)
+  const [menuItems, setMenuItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('royal_bites_menu');
+      return saved ? JSON.parse(saved) : INITIAL_MENU_ITEMS;
+    } catch {
+      return INITIAL_MENU_ITEMS;
+    }
+  });
+
+  // Cart State
+  const [cart, setCart] = useState(() => {
+    try {
+      const localCart = localStorage.getItem('royal_bites_cart');
+      return localCart ? JSON.parse(localCart) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Modals & UI States
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All Items');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [lightboxImg, setLightboxImg] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // Form State
+  const [checkoutData, setCheckoutData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    locality: '',
+    landmark: '',
+    instructions: ''
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [contactData, setContactData] = useState({ name: '', email: '', message: '' });
+  const [contactSuccess, setContactSuccess] = useState(false);
+
+  // Temp Owner Admin Form State
+  const [tempConfig, setTempConfig] = useState(config);
+  const [editingItemPrice, setEditingItemPrice] = useState({});
+
+  // Sync Config and Menu to LocalStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('royal_bites_config', JSON.stringify(config));
+    } catch (e) { console.error(e); }
+  }, [config]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('royal_bites_menu', JSON.stringify(menuItems));
+    } catch (e) { console.error(e); }
+  }, [menuItems]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('royal_bites_cart', JSON.stringify(cart));
+    } catch (e) { console.error(e); }
+  }, [cart]);
+
+  // Helper Toast
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Cart Calculations
+  const cartItemCount = useMemo(() => cart.reduce((total, i) => total + i.quantity, 0), [cart]);
+  const subtotal = useMemo(() => cart.reduce((total, i) => total + (i.price * i.quantity), 0), [cart]);
+  const isFreeDelivery = subtotal >= config.freeDeliveryThreshold;
+  const actualDeliveryFee = isFreeDelivery || subtotal === 0 ? 0 : Number(config.deliveryFee);
+  const grandTotal = subtotal + actualDeliveryFee;
+
+  // Cart Actions
+  const addToCart = (item, quantity = 1, instructions = '') => {
+    setCart(prev => {
+      const idx = prev.findIndex(i => i.id === item.id && i.instructions === instructions);
+      if (idx > -1) {
+        const next = [...prev];
+        next[idx].quantity += quantity;
+        return next;
+      }
+      return [...prev, { ...item, quantity, instructions }];
+    });
+    showToast(`Added "${item.name}" to cart!`);
+  };
+
+  const updateQuantity = (id, instructions, delta) => {
+    setCart(prev => prev.map(i => {
+      if (i.id === id && i.instructions === instructions) {
+        const newQ = i.quantity + delta;
+        return newQ > 0 ? { ...i, quantity: newQ } : null;
+      }
+      return i;
+    }).filter(Boolean));
+  };
+
+  const removeFromCart = (id, instructions) => {
+    setCart(prev => prev.filter(i => !(i.id === id && i.instructions === instructions)));
+    showToast("Item removed");
+  };
+
+  // Filter Menu
+  const filteredMenu = useMemo(() => {
+    return menuItems.filter(item => {
+      const matchCat = selectedCategory === 'All Items' || item.category === selectedCategory;
+      const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchSearch;
+    });
+  }, [selectedCategory, searchQuery, menuItems]);
+
+  // Submit Order via WhatsApp
+  const handleCheckoutSubmit = (e) => {
+    e.preventDefault();
+    const errors = {};
+    if (!checkoutData.name.trim()) errors.name = "Name is required";
+    if (!checkoutData.phone.trim() || !/^\d{10}$/.test(checkoutData.phone.replace(/\D/g, ''))) {
+      errors.phone = "Enter valid 10-digit number";
+    }
+    if (!checkoutData.address.trim()) errors.address = "Address is required";
+    if (!checkoutData.locality.trim()) errors.locality = "Locality is required";
+
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length === 0) {
+      let msg = `👑 *NEW ORDER - ${config.restaurantName}* 👑\n\n`;
+      msg += `👤 *Customer Details:*\n`;
+      msg += `• Name: ${checkoutData.name}\n`;
+      msg += `• Phone: ${checkoutData.phone}\n`;
+      msg += `• Address: ${checkoutData.address}, ${checkoutData.locality}\n`;
+      if (checkoutData.landmark) msg += `• Landmark: ${checkoutData.landmark}\n`;
+      msg += `\n🍽️ *Order Items:*\n`;
+
+      cart.forEach((item, index) => {
+        msg += `${index + 1}. *${item.name}* x ${item.quantity} = ₹${item.price * item.quantity}\n`;
+        if (item.instructions) msg += `   └ Note: ${item.instructions}\n`;
+      });
+
+      msg += `\n-------------------------------\n`;
+      msg += `💰 Subtotal: ₹${subtotal}\n`;
+      msg += `🚚 Delivery Charge: ${actualDeliveryFee === 0 ? 'FREE' : '₹' + actualDeliveryFee}\n`;
+      msg += `🌟 *Total Payable: ₹${grandTotal}*\n`;
+      msg += `-------------------------------\n`;
+      if (checkoutData.instructions) {
+        msg += `📝 *Note:* ${checkoutData.instructions}\n\n`;
+      }
+      msg += `Please confirm my order and send estimated delivery time. Thanks!`;
+
+      const waUrl = `https://wa.me/${config.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank');
+      showToast("Redirecting to WhatsApp to send order...");
+      setIsCheckoutOpen(false);
+      setIsCartOpen(false);
+    }
+  };
+
+  // Save Owner Settings
+  const handleSaveAdminSettings = () => {
+    setConfig(tempConfig);
+    // Apply menu price changes
+    setMenuItems(prev => prev.map(item => ({
+      ...item,
+      price: editingItemPrice[item.id] !== undefined ? Number(editingItemPrice[item.id]) : item.price
+    })));
+    setIsAdminOpen(false);
+    showToast("Owner Settings Saved Successfully!");
+  };
+
+  // Reset to Default
+  const handleResetDefaults = () => {
+    setConfig(DEFAULT_CONFIG);
+    setMenuItems(INITIAL_MENU_ITEMS);
+    setTempConfig(DEFAULT_CONFIG);
+    setEditingItemPrice({});
+    showToast("Reset to initial defaults");
+  };
+
+  return (
+    <div className="min-h-screen bg-[#090909] text-white font-sans selection:bg-[#D6AD58] selection:text-black">
+      
+      {/* TOAST NOTIFICATION */}
+      {toastMessage && (
+        <div className="fixed top-20 right-4 z-50 bg-[#151515] border border-[#D6AD58]/50 text-[#E8C77E] px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce">
+          <Sparkles className="w-5 h-5 text-[#D6AD58]" />
+          <span className="font-medium text-sm text-white">{toastMessage}</span>
+        </div>
+      )}
+
+      {/* STICKY NAVIGATION BAR */}
+      <nav className="sticky top-0 z-40 backdrop-blur-md bg-[#090909]/90 border-b border-[#D6AD58]/20 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          
+          {/* Logo */}
+          <a href="#" className="flex items-center gap-2 group">
+            <div className="w-10 h-10 rounded-full border border-[#D6AD58] flex items-center justify-center bg-[#151515] group-hover:border-[#E8C77E]">
+              <Utensils className="w-5 h-5 text-[#D6AD58]" />
+            </div>
+            <div>
+              <span className="text-xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#D6AD58] via-[#E8C77E] to-[#D6AD58]">
+                {config.restaurantName}
+              </span>
+              <span className="block text-[9px] tracking-widest text-[#B8B8B8] uppercase">Premium Taste & Fast Delivery</span>
+            </div>
+          </a>
+
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex items-center gap-7 text-sm font-medium">
+            {['Home', 'Offers', 'Menu', 'About', 'Gallery', 'Testimonials', 'Contact'].map((link) => (
+              <a key={link} href={`#${link.toLowerCase()}`} className="text-[#B8B8B8] hover:text-[#D6AD58] transition-colors py-1">
+                {link}
+              </a>
+            ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            {/* Owner Settings Toggle Button */}
+            <button 
+              onClick={() => {
+                setTempConfig(config);
+                setIsAdminOpen(true);
+              }}
+              className="p-2.5 rounded-full bg-[#151515] border border-[#D6AD58]/30 hover:border-[#D6AD58] text-[#D6AD58] transition-all"
+              title="Owner / Admin Controls"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+
+            {/* Cart Button */}
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2.5 rounded-full bg-[#151515] border border-[#D6AD58]/30 hover:border-[#D6AD58] text-[#E8C77E] transition-all"
+              aria-label="Shopping Cart"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black font-bold text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </button>
+
+            {/* CTA Button */}
+            <a 
+              href="#menu" 
+              className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black font-semibold text-sm hover:brightness-110 transition-all shadow-md"
+            >
+              Order Now
+              <ChevronRight className="w-4 h-4" />
+            </a>
+
+            {/* Mobile Hamburger */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg bg-[#151515] text-[#D6AD58] border border-[#D6AD58]/20"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-[#090909] border-b border-[#D6AD58]/30 px-6 py-6 space-y-4">
+            {['Home', 'Offers', 'Menu', 'About', 'Gallery', 'Testimonials', 'Contact'].map((link) => (
+              <a 
+                key={link} 
+                href={`#${link.toLowerCase()}`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-lg font-medium text-[#B8B8B8] hover:text-[#D6AD58]"
+              >
+                {link}
+              </a>
+            ))}
+            <button 
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setIsAdminOpen(true);
+              }}
+              className="block w-full text-left py-2 text-[#D6AD58] font-bold text-sm flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" /> Owner Settings Panel
+            </button>
+          </div>
+        )}
+      </nav>
+
+      {/* HERO SECTION */}
+      <section id="home" className="relative min-h-[80vh] flex items-center justify-center py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=1920" 
+            alt="Royal Gourmet Background" 
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#090909] via-[#090909]/70 to-[#090909]/90" />
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#151515] border border-[#D6AD58]/40 text-[#E8C77E] text-xs font-semibold tracking-wider uppercase">
+            <Sparkles className="w-4 h-4 text-[#D6AD58]" /> Fast Home Delivery & Royal Flavors
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
+            Where Every Bite Feels <br className="hidden sm:inline" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D6AD58] via-[#FCE8B3] to-[#E8C77E]">
+              Truly Royal
+            </span>
+          </h1>
+
+          <p className="max-w-2xl mx-auto text-base sm:text-lg text-[#B8B8B8]">
+            Authentic royal recipes, handcrafted starters, mains & desserts at affordable prices. Direct WhatsApp order confirmation.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <a 
+              href="#menu" 
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black font-bold text-base hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2"
+            >
+              Explore Royal Menu
+              <ArrowRight className="w-5 h-5" />
+            </a>
+            <a 
+              href="#offers" 
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#151515] border border-[#D6AD58]/40 text-[#E8C77E] font-semibold text-base hover:border-[#D6AD58] transition-all flex items-center justify-center gap-2"
+            >
+              <Flame className="w-5 h-5 text-[#D6AD58]" />
+              Special Combos
+            </a>
+          </div>
+
+          {/* Highlights */}
+          <div className="pt-8 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
+            {[
+              { icon: ShieldCheck, text: '100% Fresh & Clean' },
+              { icon: Clock, text: '30 Min Quick Delivery' },
+              { icon: Award, text: 'Chef Specials' },
+              { icon: MessageSquare, text: 'Direct WhatsApp Order' },
+            ].map((item, idx) => (
+              <div key={idx} className="p-3 rounded-xl bg-[#151515]/80 border border-[#D6AD58]/20 flex items-center gap-2 text-xs text-[#B8B8B8] justify-center">
+                <item.icon className="w-4 h-4 text-[#D6AD58]" />
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SPECIAL OFFERS SECTION */}
+      <section id="offers" className="py-16 bg-[#151515]/50 border-y border-[#D6AD58]/10 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-2 mb-10">
+            <span className="text-xs font-bold text-[#D6AD58] uppercase">AFFORDABLE DEALS</span>
+            <h2 className="text-3xl font-bold text-white">Curated Special Offers</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {SPECIAL_OFFERS.map((offer) => (
+              <div key={offer.id} className="bg-[#090909] rounded-2xl border border-[#D6AD58]/30 overflow-hidden flex flex-col justify-between p-5 space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black text-[10px] font-bold px-3 py-1 rounded-full">{offer.discount}</span>
+                    <span className="text-[10px] text-[#E8C77E] uppercase">{offer.tag}</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white">{offer.title}</h3>
+                  <p className="text-xs text-[#B8B8B8] mt-1">{offer.description}</p>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-[#D6AD58]/10">
+                  <div>
+                    <span className="text-xs text-[#B8B8B8] line-through mr-1.5">₹{offer.originalPrice}</span>
+                    <span className="text-xl font-extrabold text-[#D6AD58]">₹{offer.offerPrice}</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      const matchedItem = menuItems.find(m => m.id === offer.itemsToAdd[0]);
+                      if (matchedItem) {
+                        addToCart({ ...matchedItem, name: offer.title, price: offer.offerPrice });
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#151515] border border-[#D6AD58]/50 text-[#E8C77E] text-xs font-semibold hover:bg-[#D6AD58] hover:text-black transition-all flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Deal
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FOOD MENU SECTION */}
+      <section id="menu" className="py-20 px-4 max-w-7xl mx-auto">
+        <div className="text-center space-y-2 mb-8">
+          <span className="text-xs font-bold text-[#D6AD58] uppercase">FRESH & TASTY</span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">Our Food Menu</h2>
+        </div>
+
+        {/* Search & Categories */}
+        <div className="space-y-6 mb-10">
+          <div className="max-w-md mx-auto relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D6AD58]" />
+            <input 
+              type="text" 
+              placeholder="Search Biryani, Pizza, Momos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-[#151515] border border-[#D6AD58]/30 text-white placeholder-[#B8B8B8]/60 focus:outline-none focus:border-[#D6AD58] text-xs"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-none justify-start md:justify-center">
+            {MENU_CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
+                  selectedCategory === cat 
+                    ? 'bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black border-transparent font-bold' 
+                    : 'bg-[#151515] text-[#B8B8B8] border-[#D6AD58]/20 hover:text-white'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Food Items Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredMenu.map((dish) => (
+            <div key={dish.id} className="bg-[#151515] rounded-2xl border border-[#D6AD58]/20 hover:border-[#D6AD58] transition-all overflow-hidden flex flex-col justify-between shadow-xl">
+              <div>
+                <div className="relative h-48 cursor-pointer" onClick={() => setSelectedFood(dish)}>
+                  <img src={dish.image} alt={dish.name} className="w-full h-full object-cover" />
+                  <div className="absolute top-3 left-3 flex gap-2">
+                    <span className={`w-5 h-5 rounded flex items-center justify-center bg-[#090909]/80 border ${dish.isVeg ? 'border-green-500' : 'border-red-500'}`}>
+                      <span className={`w-2 h-2 rounded-full ${dish.isVeg ? 'bg-green-500' : 'bg-red-500'}`} />
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-[#D6AD58] uppercase font-semibold">{dish.category}</span>
+                    <div className="flex items-center gap-1 text-xs text-[#E8C77E]">
+                      <Star className="w-3 h-3 fill-[#D6AD58]" />
+                      <span className="font-bold">{dish.rating}</span>
+                    </div>
+                  </div>
+
+                  <h3 onClick={() => setSelectedFood(dish)} className="text-base font-bold text-white hover:text-[#E8C77E] cursor-pointer line-clamp-1">{dish.name}</h3>
+                  <p className="text-xs text-[#B8B8B8] line-clamp-2">{dish.description}</p>
+                </div>
+              </div>
+
+              <div className="p-4 pt-0 flex items-center justify-between mt-2">
+                <span className="text-lg font-extrabold text-[#D6AD58]">₹{dish.price}</span>
+                <button 
+                  onClick={() => addToCart(dish)}
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black font-bold text-xs hover:brightness-110 flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FOOD DETAIL MODAL */}
+      {selectedFood && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#151515] border border-[#D6AD58]/40 rounded-3xl max-w-lg w-full overflow-hidden relative">
+            <button onClick={() => setSelectedFood(null)} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/60 text-white">
+              <X className="w-5 h-5" />
+            </button>
+
+            <img src={selectedFood.image} alt={selectedFood.name} className="w-full h-56 object-cover" />
+
+            <div className="p-6 space-y-4">
+              <h3 className="text-2xl font-bold text-white">{selectedFood.name}</h3>
+              <p className="text-xs text-[#B8B8B8]">{selectedFood.description}</p>
+
+              <div>
+                <label className="block text-xs text-[#D6AD58] mb-1 font-semibold">Special Instructions (Optional)</label>
+                <input 
+                  type="text" 
+                  id="modal-inst"
+                  placeholder="e.g. Less spicy, extra sauce..."
+                  className="w-full px-4 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-[#D6AD58]/20">
+                <span className="text-2xl font-bold text-[#D6AD58]">₹{selectedFood.price}</span>
+                <button 
+                  onClick={() => {
+                    const inst = document.getElementById('modal-inst')?.value || '';
+                    addToCart(selectedFood, 1, inst);
+                    setSelectedFood(null);
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black font-bold text-xs flex items-center gap-2"
+                >
+                  <ShoppingBag className="w-4 h-4" /> Add to Order
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CART DRAWER */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-black/70 backdrop-blur-sm">
+          <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-[#151515] border-l border-[#D6AD58]/30 flex flex-col justify-between">
+              
+              <div className="p-5 border-b border-[#D6AD58]/20 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white">Your Cart ({cartItemCount})</h2>
+                <button onClick={() => setIsCartOpen(false)} className="p-2 text-[#B8B8B8] hover:text-white"><X className="w-5 h-5" /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-3">
+                {cart.length === 0 ? (
+                  <div className="text-center py-16 text-[#B8B8B8] text-sm">Cart is empty. Add some delicious food!</div>
+                ) : (
+                  cart.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between gap-3 bg-[#090909] p-3 rounded-xl border border-[#D6AD58]/10">
+                      <div className="flex-1">
+                        <h4 className="text-xs font-bold text-white">{item.name}</h4>
+                        <span className="text-xs text-[#D6AD58]">₹{item.price * item.quantity}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => updateQuantity(item.id, item.instructions, -1)} className="p-1 rounded bg-[#151515]"><Minus className="w-3 h-3" /></button>
+                        <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, item.instructions, 1)} className="p-1 rounded bg-[#151515]"><Plus className="w-3 h-3" /></button>
+                        <button onClick={() => removeFromCart(item.id, item.instructions)} className="p-1 text-red-400 ml-1"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {cart.length > 0 && (
+                <div className="p-5 bg-[#090909] border-t border-[#D6AD58]/20 space-y-3">
+                  <div className="space-y-1 text-xs text-[#B8B8B8]">
+                    <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
+                    <div className="flex justify-between">
+                      <span>Delivery Fee</span>
+                      <span>{actualDeliveryFee === 0 ? <span className="text-green-400 font-bold">FREE</span> : `₹${actualDeliveryFee}`}</span>
+                    </div>
+                    {subtotal < config.freeDeliveryThreshold && (
+                      <p className="text-[10px] text-[#E8C77E]">Add ₹{config.freeDeliveryThreshold - subtotal} more for FREE delivery!</p>
+                    )}
+                    <div className="flex justify-between text-sm font-bold text-white pt-2 border-t border-[#D6AD58]/20">
+                      <span>Total Payable</span><span className="text-[#D6AD58]">₹{grandTotal}</span>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black font-bold text-xs"
+                  >
+                    Proceed to Checkout
+                  </button>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CHECKOUT & WHATSAPP FORM */}
+      {isCheckoutOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#151515] border border-[#D6AD58]/40 rounded-3xl max-w-lg w-full p-6 space-y-5 relative my-8">
+            <button onClick={() => setIsCheckoutOpen(false)} className="absolute top-4 right-4 p-2 text-[#B8B8B8]"><X className="w-5 h-5" /></button>
+            <h2 className="text-xl font-bold text-white">Delivery Details</h2>
+
+            <form onSubmit={handleCheckoutSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs text-[#B8B8B8] mb-1">Full Name *</label>
+                <input 
+                  type="text" 
+                  required
+                  value={checkoutData.name}
+                  onChange={(e) => setCheckoutData({...checkoutData, name: e.target.value})}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#B8B8B8] mb-1">WhatsApp Mobile Phone *</label>
+                <input 
+                  type="tel" 
+                  required
+                  placeholder="10 digit number"
+                  value={checkoutData.phone}
+                  onChange={(e) => setCheckoutData({...checkoutData, phone: e.target.value})}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#B8B8B8] mb-1">Full Address *</label>
+                <input 
+                  type="text" 
+                  required
+                  value={checkoutData.address}
+                  onChange={(e) => setCheckoutData({...checkoutData, address: e.target.value})}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-[#B8B8B8] mb-1">Locality / City *</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={checkoutData.locality}
+                    onChange={(e) => setCheckoutData({...checkoutData, locality: e.target.value})}
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-[#B8B8B8] mb-1">Landmark</label>
+                  <input 
+                    type="text" 
+                    value={checkoutData.landmark}
+                    onChange={(e) => setCheckoutData({...checkoutData, landmark: e.target.value})}
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#D6AD58]/10 text-[#E8C77E] text-[11px] flex items-center gap-2">
+                <Info className="w-4 h-4 shrink-0" />
+                <span>Orders will send directly to WhatsApp <strong>+{config.whatsappNumber}</strong>.</span>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2"
+              >
+                <MessageSquare className="w-4 h-4" /> Send Order on WhatsApp
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* OWNER / ADMIN CONTROL MODAL */}
+      {isAdminOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#151515] border border-[#D6AD58] rounded-3xl max-w-2xl w-full p-6 space-y-6 relative my-8">
+            <button onClick={() => setIsAdminOpen(false)} className="absolute top-4 right-4 p-2 text-[#B8B8B8]"><X className="w-5 h-5" /></button>
+
+            <div className="flex items-center gap-3 border-b border-[#D6AD58]/20 pb-4">
+              <Settings className="w-6 h-6 text-[#D6AD58]" />
+              <div>
+                <h2 className="text-xl font-bold text-white">Owner & Pricing Control Panel</h2>
+                <p className="text-xs text-[#B8B8B8]">Modify restaurant configuration and item prices directly.</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <h3 className="text-xs font-bold text-[#D6AD58] uppercase">General Store Settings</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-[#B8B8B8] mb-1">WhatsApp Business Number</label>
+                  <input 
+                    type="text" 
+                    value={tempConfig.whatsappNumber}
+                    onChange={(e) => setTempConfig({...tempConfig, whatsappNumber: e.target.value})}
+                    className="w-full px-3 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-[#B8B8B8] mb-1">Delivery Fee (₹)</label>
+                  <input 
+                    type="number" 
+                    value={tempConfig.deliveryFee}
+                    onChange={(e) => setTempConfig({...tempConfig, deliveryFee: Number(e.target.value)})}
+                    className="w-full px-3 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-[#B8B8B8] mb-1">Free Delivery Minimum Amount (₹)</label>
+                  <input 
+                    type="number" 
+                    value={tempConfig.freeDeliveryThreshold}
+                    onChange={(e) => setTempConfig({...tempConfig, freeDeliveryThreshold: Number(e.target.value)})}
+                    className="w-full px-3 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-[#B8B8B8] mb-1">Restaurant Name</label>
+                  <input 
+                    type="text" 
+                    value={tempConfig.restaurantName}
+                    onChange={(e) => setTempConfig({...tempConfig, restaurantName: e.target.value})}
+                    className="w-full px-3 py-2 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-white text-xs"
+                  />
+                </div>
+              </div>
+
+              <h3 className="text-xs font-bold text-[#D6AD58] uppercase pt-4 border-t border-[#D6AD58]/20">Modify Menu Prices</h3>
+
+              <div className="space-y-2">
+                {menuItems.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between gap-4 p-2.5 rounded-xl bg-[#090909] border border-[#D6AD58]/10 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white">{item.name}</span>
+                      <span className="text-[10px] text-[#B8B8B8]">({item.category})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#B8B8B8]">₹</span>
+                      <input 
+                        type="number" 
+                        defaultValue={item.price}
+                        onChange={(e) => setEditingItemPrice({...editingItemPrice, [item.id]: e.target.value})}
+                        className="w-20 px-2 py-1 rounded bg-[#151515] border border-[#D6AD58]/40 text-white font-bold text-xs"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-[#D6AD58]/20">
+              <button 
+                onClick={handleResetDefaults} 
+                className="px-4 py-2 rounded-xl bg-red-950/60 border border-red-500/40 text-red-400 text-xs font-semibold flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Reset Defaults
+              </button>
+              
+              <button 
+                onClick={handleSaveAdminSettings} 
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black font-bold text-xs flex items-center gap-1.5"
+              >
+                <Save className="w-4 h-4" /> Save All Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABOUT SECTION */}
+      <section id="about" className="py-16 bg-[#151515]/40 border-y border-[#D6AD58]/10 px-4">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          <div className="space-y-4">
+            <span className="text-xs font-bold text-[#D6AD58] uppercase">OUR STORY</span>
+            <h2 className="text-3xl font-bold text-white">Authentic Taste, Affordable Luxury</h2>
+            <p className="text-xs text-[#B8B8B8] leading-relaxed">
+              At {config.restaurantName}, we deliver high quality authentic dishes prepared with clean ingredients, traditional hand-ground spices, and utmost care for hygiene.
+            </p>
+          </div>
+          <div className="h-60 rounded-2xl overflow-hidden border border-[#D6AD58]/30">
+            <img src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&q=80&w=600" alt="Dining" className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </section>
+
+      {/* GALLERY SECTION */}
+      <section id="gallery" className="py-16 px-4 max-w-7xl mx-auto">
+        <div className="text-center mb-8">
+          <span className="text-xs font-bold text-[#D6AD58] uppercase">VISUALS</span>
+          <h2 className="text-3xl font-bold text-white">Gallery</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {GALLERY_IMAGES.map((g) => (
+            <div key={g.id} onClick={() => setLightboxImg(g.image)} className="h-44 rounded-xl overflow-hidden border border-[#D6AD58]/20 cursor-pointer">
+              <img src={g.image} alt={g.title} className="w-full h-full object-cover hover:scale-110 transition-transform" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* LIGHTBOX */}
+      {lightboxImg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={() => setLightboxImg(null)}>
+          <img src={lightboxImg} alt="Enlarged" className="max-w-full max-h-[80vh] rounded-xl border border-[#D6AD58]" />
+        </div>
+      )}
+
+      {/* TESTIMONIALS */}
+      <section id="testimonials" className="py-16 bg-[#151515]/30 border-t border-[#D6AD58]/10 px-4">
+        <div className="max-w-6xl mx-auto text-center mb-8">
+          <span className="text-xs font-bold text-[#D6AD58] uppercase">REVIEWS</span>
+          <h2 className="text-3xl font-bold text-white">What Customers Say</h2>
+        </div>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          {TESTIMONIALS.map((t) => (
+            <div key={t.id} className="p-5 rounded-2xl bg-[#090909] border border-[#D6AD58]/20 space-y-3">
+              <p className="text-xs text-[#B8B8B8] italic">"{t.comment}"</p>
+              <h4 className="text-xs font-bold text-white">- {t.name}</h4>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CONTACT */}
+      <section id="contact" className="py-16 px-4 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <span className="text-xs font-bold text-[#D6AD58] uppercase">CONTACT US</span>
+            <h2 className="text-3xl font-bold text-white">Get In Touch</h2>
+            <p className="text-xs text-[#B8B8B8]">WhatsApp / Phone: +{config.whatsappNumber}</p>
+            <p className="text-xs text-[#B8B8B8]">Opening Hours: 11:00 AM – 11:00 PM</p>
+          </div>
+          
+          <form onSubmit={(e) => { e.preventDefault(); setContactSuccess(true); }} className="bg-[#151515] p-6 rounded-2xl border border-[#D6AD58]/30 space-y-3">
+            {contactSuccess ? (
+              <p className="text-green-400 text-xs">Message sent successfully!</p>
+            ) : (
+              <>
+                <input type="text" placeholder="Your Name" required className="w-full p-2.5 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-xs text-white" />
+                <textarea placeholder="Message" rows="3" required className="w-full p-2.5 rounded-xl bg-[#090909] border border-[#D6AD58]/30 text-xs text-white" />
+                <button type="submit" className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#D6AD58] to-[#E8C77E] text-black font-bold text-xs">Send</button>
+              </>
+            )}
+          </form>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-[#090909] border-t border-[#D6AD58]/20 py-8 px-4 text-center text-xs text-[#B8B8B8] space-y-2">
+        <p>© {new Date().getFullYear()} {config.restaurantName}. All Rights Reserved.</p>
+        <button onClick={() => { setTempConfig(config); setIsAdminOpen(true); }} className="text-[#D6AD58] underline text-[11px]">
+          [ Owner Settings & Price Panel ]
+        </button>
+      </footer>
+
+      {/* FLOATING WHATSAPP BUTTON */}
+      <a 
+        href={`https://wa.me/${config.whatsappNumber}?text=${encodeURIComponent('Hi! I would like to order food from ' + config.restaurantName)}`}
+        target="_blank"
+        rel="noreferrer"
+        className="fixed bottom-6 right-6 z-40 p-4 rounded-full bg-green-500 text-white shadow-2xl hover:scale-110 transition-transform"
+      >
+        <MessageSquare className="w-6 h-6" />
+      </a>
+
+    </div>
+  );
+}
+```
